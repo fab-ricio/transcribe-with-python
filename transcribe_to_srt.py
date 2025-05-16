@@ -19,38 +19,42 @@ def main():
         # Vérifier que FFmpeg est accessible
         try:
             subprocess.run(["ffmpeg", "-version"], capture_output=True, check=True)
-            print("✅ FFmpeg est correctement installé")
+            print("[OK] FFmpeg est correctement installé")
         except Exception as e:
-            print("❌ Erreur : FFmpeg n'est pas accessible")
+            print("[ERREUR] FFmpeg n'est pas accessible")
             print("Veuillez vérifier l'installation de FFmpeg")
             sys.exit(1)
 
-        # Chemin du fichier audio
-        audio_path = "C:/Users/ACTUTEC/Desktop/raymond 3.wav"
+        # Récupérer le chemin du fichier audio depuis les arguments
+        if len(sys.argv) < 2:
+            print("[ERREUR] Veuillez fournir le chemin du fichier audio")
+            sys.exit(1)
+
+        audio_path = sys.argv[1]
 
         # Vérifier si le fichier existe
         if not os.path.exists(audio_path):
-            print(f"❌ Erreur : Le fichier {audio_path} n'existe pas.")
+            print(f"[ERREUR] Le fichier {audio_path} n'existe pas.")
             print("Veuillez vérifier le chemin du fichier audio.")
             sys.exit(1)
 
-        print(f"✅ Fichier audio trouvé : {audio_path}")
+        print(f"[OK] Fichier audio trouvé : {audio_path}")
 
         # Charger le modèle avec compute_type="float32" et langue française
-        print("🔄 Chargement du modèle en français...")
+        print("[INFO] Chargement du modèle en français...")
         model = whisperx.load_model("small", device="cpu", compute_type="float32", language="fr")
 
         # Transcription de base avec langue française forcée
-        print("🔄 Transcription en français...")
+        print("[INFO] Transcription en français...")
         result = model.transcribe(audio_path, language="fr", task="transcribe")
 
         # Aligner les mots pour avoir des timestamps précis mot par mot
-        print("🔄 Alignement des mots en français...")
+        print("[INFO] Alignement des mots en français...")
         model_a, metadata = whisperx.load_align_model(language_code="fr", device="cpu")
         aligned_result = whisperx.align(result["segments"], model_a, metadata, audio_path, device="cpu")
 
         # Générer le fichier SRT avec deux mots par ligne
-        print("🔄 Génération du fichier SRT...")
+        print("[INFO] Génération du fichier SRT...")
         output_file = "output_word_by_word.srt"
         with open(output_file, "w", encoding="utf-8") as f:
             words = aligned_result["word_segments"]
@@ -73,10 +77,10 @@ def main():
                 f.write(f"{format_time(start)} --> {format_time(end)}\n")
                 f.write(f"{text}\n\n")
 
-        print(f"✅ Fichier SRT généré avec succès : {output_file}")
+        print(f"[OK] Fichier SRT généré avec succès : {output_file}")
 
     except Exception as e:
-        print(f"❌ Une erreur est survenue : {str(e)}")
+        print(f"[ERREUR] Une erreur est survenue : {str(e)}")
         sys.exit(1)
 
 if __name__ == "__main__":
