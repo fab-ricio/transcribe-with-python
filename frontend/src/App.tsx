@@ -52,11 +52,25 @@ function App() {
     }
   }
 
+  const handleDownload = () => {
+    if (!srtContent) return
+
+    const blob = new Blob([srtContent], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = file ? `${file.name.split('.')[0]}.srt` : 'transcription.srt'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <Container className="py-5">
       <Row className="justify-content-center">
         <Col md={8}>
-          <h1 className="text-center mb-4">Transcription Audio en SRT</h1>
+          <h1 className="text-center mb-4">Transcription en SRT</h1>
 
           <Card className="mb-4">
             <Card.Body>
@@ -125,6 +139,13 @@ function App() {
                   readOnly
                   className="mt-3"
                 />
+                <Button
+                  variant="success"
+                  onClick={handleDownload}
+                  className="mt-3 w-100"
+                >
+                  Télécharger le fichier SRT
+                </Button>
               </Card.Body>
             </Card>
           )}
