@@ -25,14 +25,15 @@ def main():
             print("Veuillez vérifier l'installation de FFmpeg")
             sys.exit(1)
 
-        # Récupérer le chemin du fichier audio depuis les arguments
-        if len(sys.argv) < 2:
-            print("[ERREUR] Veuillez fournir le chemin du fichier audio")
+        # Récupérer les chemins depuis les arguments
+        if len(sys.argv) < 3:
+            print("[ERREUR] Veuillez fournir le chemin du fichier audio et le chemin du fichier SRT")
             sys.exit(1)
 
         audio_path = sys.argv[1]
+        output_file = sys.argv[2]
 
-        # Vérifier si le fichier existe
+        # Vérifier si le fichier audio existe
         if not os.path.exists(audio_path):
             print(f"[ERREUR] Le fichier {audio_path} n'existe pas.")
             print("Veuillez vérifier le chemin du fichier audio.")
@@ -55,7 +56,6 @@ def main():
 
         # Générer le fichier SRT avec deux mots par ligne
         print("[INFO] Génération du fichier SRT...")
-        output_file = "output_word_by_word.srt"
         with open(output_file, "w", encoding="utf-8") as f:
             words = aligned_result["word_segments"]
             for i in range(0, len(words), 2):

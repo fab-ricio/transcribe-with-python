@@ -50,12 +50,16 @@ app.post("/transcribe", upload.single("audio"), async (req, res) => {
       "bytes"
     );
 
+    // Créer un nom de fichier unique pour le SRT
+    const srtFileName = `output_${Date.now()}.srt`;
+    const srtPath = path.join(__dirname, "..", srtFileName);
+
     const options = {
       mode: "text",
       pythonPath: "py",
       pythonOptions: ["-3.12", "-u"],
       scriptPath: path.join(__dirname, ".."),
-      args: [req.file.path],
+      args: [req.file.path, srtPath], // Passer le chemin du fichier SRT en argument
     };
 
     console.log("⚙️ Options Python:", JSON.stringify(options, null, 2));
@@ -63,7 +67,6 @@ app.post("/transcribe", upload.single("audio"), async (req, res) => {
     PythonShell.run("transcribe_to_srt.py", options)
       .then((messages) => {
         console.log("📝 Messages Python:", messages);
-        const srtPath = path.join(__dirname, "..", "output_word_by_word.srt");
 
         if (!fs.existsSync(srtPath)) {
           throw new Error("Le fichier SRT n'a pas été généré");
@@ -74,10 +77,22 @@ app.post("/transcribe", upload.single("audio"), async (req, res) => {
           "✅ Transcription réussie, taille du fichier SRT:",
           srtContent.length
         );
+
+        // Nettoyer les fichiers temporaires
+        fs.unlinkSync(req.file.path); // Supprimer le fichier audio
+        fs.unlinkSync(srtPath); // Supprimer le fichier SRT temporaire
+
         res.json({ srt: srtContent });
       })
       .catch((err) => {
         console.error("❌ Erreur Python:", err);
+        // Nettoyer en cas d'erreur
+        if (fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+        if (fs.existsSync(srtPath)) {
+          fs.unlinkSync(srtPath);
+        }
         res.status(500).json({
           error: "Erreur lors de la transcription",
           details:
