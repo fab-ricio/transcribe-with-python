@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import { Container, Row, Col, Card, Button, Form, Spinner, Alert } from 'react-bootstrap'
+import { Container, Row, Col, Card, Button, Form, Spinner, Alert, ProgressBar } from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
 function App() {
@@ -9,6 +9,27 @@ function App() {
   const [srtContent, setSrtContent] = useState('')
   const [error, setError] = useState('')
   const [errorDetails, setErrorDetails] = useState('')
+  const [progress, setProgress] = useState(0)
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    if (loading) {
+      interval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(interval)
+            return 90
+          }
+          return prev + 10
+        })
+      }, 1000)
+    } else {
+      setProgress(0)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [loading])
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -28,6 +49,7 @@ function App() {
     setError('')
     setErrorDetails('')
     setSrtContent('')
+    setProgress(0)
 
     const formData = new FormData()
     formData.append('audio', file)
@@ -39,6 +61,7 @@ function App() {
         }
       })
       setSrtContent(response.data.srt)
+      setProgress(100)
     } catch (err: any) {
       setError('Une erreur est survenue lors de la transcription')
       if (err.response?.data?.details) {
@@ -113,6 +136,20 @@ function App() {
                     'Transcrire'
                   )}
                 </Button>
+
+                {loading && (
+                  <div className="mt-3">
+                    <ProgressBar 
+                      now={progress} 
+                      label={`${progress}%`}
+                      variant={progress === 100 ? "success" : "primary"}
+                      animated={progress < 100}
+                    />
+                    <p className="text-center mt-2 text-muted">
+                      {progress < 100 ? "Transcription en cours..." : "Transcription terminée !"}
+                    </p>
+                  </div>
+                )}
 
                 {error && (
                   <Alert variant="danger" className="mt-3">
