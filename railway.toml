@@ -1,6 +1,6 @@
 [build]
-builder = "nixpacks"
-buildCommand = "npm install"
+builder = "DOCKERFILE"
+dockerfilePath = "backend/Dockerfile"
 
 [phases.setup]
 nixPkgs = ["nodejs", "python312", "python312Packages.pip"]
