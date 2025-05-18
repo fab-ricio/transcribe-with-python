@@ -2,6 +2,9 @@
 builder = "nixpacks"
 buildCommand = "npm install"
 
+[phases.setup]
+nixPkgs = ["nodejs", "python312", "python312Packages.pip"]
+
 [deploy]
 startCommand = "npm start"
 healthcheckPath = "/"
