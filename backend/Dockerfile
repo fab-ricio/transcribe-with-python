@@ -1,5 +1,5 @@
-# Utiliser une image Node.js officielle
-FROM node:20-slim
+# Utiliser une image Node.js complète
+FROM node:20
 
 # Installer Python et les dépendances nécessaires
 RUN apt-get update && apt-get install -y \
