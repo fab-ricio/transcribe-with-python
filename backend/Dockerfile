@@ -1,11 +1,17 @@
-# Utiliser une image Node.js complète
-FROM node:20
+# Utiliser une image Python comme base
+FROM python:3.12-slim
 
-# Installer Python et les dépendances nécessaires
+# Installer Node.js et npm
 RUN apt-get update && apt-get install -y \
-    python3.12 \
-    python3-pip \
+    curl \
+    gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Vérifier les installations
+RUN python3 --version && node --version && npm --version
 
 # Créer le répertoire de l'application
 WORKDIR /app
